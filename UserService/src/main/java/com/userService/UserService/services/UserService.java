@@ -5,16 +5,16 @@ import com.userService.UserService.exceptions.NotFoundException;
 import com.userService.UserService.models.User;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 public interface UserService {
 
-    public User signUp(SignUpRequestDto signUpRequestDto) throws NotFoundException;
+    public User getUserDetails(long userId) throws NotFoundException;
 
-    public User signIn(String email, String password) throws NotFoundException;
+    public User setUserRoles(long userId, List<Long> roleIds) throws NotFoundException;
 
-    public LogOutResponseDto logout(LogOutRequestDto logOutRequestDto);
-
-    public ValidateResponseDto validate(String email, String token);
 
 
 }

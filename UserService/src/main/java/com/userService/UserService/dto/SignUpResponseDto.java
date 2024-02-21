@@ -10,7 +10,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class SignUpResponseDto {
-    private UUID id;
+    private long id;
     private String name;
     private String email;
     private String token;

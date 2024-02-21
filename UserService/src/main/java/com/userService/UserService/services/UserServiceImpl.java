@@ -2,13 +2,18 @@ package com.userService.UserService.services;
 
 import com.userService.UserService.dto.*;
 import com.userService.UserService.exceptions.NotFoundException;
+import com.userService.UserService.models.Role;
 import com.userService.UserService.models.User;
+import com.userService.UserService.repositories.RoleRepository;
 import com.userService.UserService.repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
  import org.apache.commons.text.RandomStringGenerator;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -16,64 +21,20 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepo userRepo;
 
-    @Override
-    public User signUp(SignUpRequestDto signUpRequestDto) throws NotFoundException {
-        Optional<User> optionalUser = userRepo.findByEmail(signUpRequestDto.getEmail());
-        if (optionalUser.isPresent()) {
-            throw new NotFoundException("User already exists");
-        }
-        User user = new User();
-        user.setName(signUpRequestDto.getName());
-        user.setEmail(signUpRequestDto.getEmail());
-        user.setPassword(signUpRequestDto.getPassword());
-        String token = generateRandomToken();
-        user.setToken(token);
-        userRepo.save(user);
-        return user;
-    }
+    @Autowired
+    private RoleRepository roleRepo;
+
 
     @Override
-    public User signIn(String email, String password) throws NotFoundException {
-        Optional<User> optionalUser = userRepo.findByEmail(email);
-        if (optionalUser.isEmpty()) {
-            throw new NotFoundException("User not found");
+    public User getUserDetails(long userId) throws NotFoundException {
+        Optional<User> optionalUser = userRepo.findById(userId);
+        if(optionalUser.isEmpty()){
+            throw new NotFoundException("User is not found in db");
         }
         User user = optionalUser.get();
-        if (!user.getEmail().equals(email)) {
-            throw new NotFoundException("Invalid email");
-        }
-        if (!user.getPassword().equals(password)) {
-            throw new NotFoundException("Invalid password");
-        }
-        String token = generateRandomToken();
-        user.setToken(token);
-        userRepo.save(user);
-
         return user;
     }
 
-    @Override
-    public LogOutResponseDto logout(LogOutRequestDto logOutRequestDto) {
-        Optional<User> optionalUser = userRepo.findByEmail(logOutRequestDto.getEmail());
-        LogOutResponseDto logOutResponseDto = new LogOutResponseDto();
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            if (user.getToken() != null && user.getToken().equals(logOutRequestDto.getToken())) {
-                user.setToken(null);
-                userRepo.save(user);
-                logOutResponseDto.setMessage("Logged out successfully");
-            } else {
-                logOutResponseDto.setMessage("Invalid token for the user");
-
-            }
-
-        } else {
-            logOutResponseDto.setMessage("Invalid email");
-        }
-        return logOutResponseDto;
-    }
-
-    @Override
     public ValidateResponseDto validate(String email, String token) {
         Optional<User> optionalUser = userRepo.findByEmail(email);
         ValidateResponseDto validateResponseDto = new ValidateResponseDto();
@@ -94,6 +55,19 @@ public class UserServiceImpl implements UserService {
             validateResponseDto.setToken(token);
         }
         return validateResponseDto;
+    }
+
+    @Override
+    public User setUserRoles(long userId, List<Long> roleIds) throws NotFoundException {
+        Optional<User> userOptional = userRepo.findById(userId);
+        List<Role> roles = roleRepo.findAllByIdIn(roleIds);
+        if(userOptional.isEmpty()){
+          throw new NotFoundException("User is not found");
+        }
+        User user = userOptional.get();
+        user.setRoles(Set.copyOf(roles));
+        userRepo.save(user);
+        return user;
     }
 
     private String generateRandomToken() {
