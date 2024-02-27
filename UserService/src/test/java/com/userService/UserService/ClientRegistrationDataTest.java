@@ -21,8 +21,8 @@ public class ClientRegistrationDataTest {
     private RegisteredClientRepository registeredClientRepository;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-//    @Test
-//    @Commit
+   //@Test
+    //@Commit
     public void addNewRegisteredClient() {
         RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("productservice")

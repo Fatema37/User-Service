@@ -1,2 +1,2 @@
-ALTER TABLE User
-DROP COLUMN token;
+-- ALTER TABLE User
+-- DROP COLUMN token;
